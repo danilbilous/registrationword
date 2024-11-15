@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Реєстрація людей та компаній</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 20px;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      animation: fadeIn 1.5s ease-out;
+    }
+
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      animation: slideIn 1s ease-out;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      transition: transform 0.2s ease;
+    }
+
+    textarea {
+      resize: none;
+      height: 80px;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+      animation: fadeIn 1.5s ease-out;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+      transform: scale(1.05);
+    }
+
+    .user-list, .approved-list {
+      margin-top: 20px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      animation: slideUp 1s ease-out;
+    }
+
+    .user-item, .approved-item {
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+      transition: transform 0.3s ease;
+    }
+
+    .user-item:last-child, .approved-item:last-child {
+      border-bottom: none;
+    }
+
+    .user-item:hover, .approved-item:hover {
+      transform: scale(1.02);
+    }
+
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      text-align: center;
+      display: none;
+      opacity: 0;
+      animation: zoomIn 0.5s ease forwards;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      display: none;
+      opacity: 0;
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    .admin-btn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+      padding: 10px;
+      width: 100%;
+      margin-top: 10px;
+      transition: transform 0.2s ease;
+    }
+
+    .admin-btn:hover {
+      background-color: #218838;
+      transform: scale(1.05);
+    }
+
+    .progress-bar {
+      height: 10px;
+      background: #007BFF;
+      width: 0;
+      border-radius: 5px;
+    }
+
+    .progress-container {
+      width: 100%;
+      background: #e0e0e0;
+      height: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+
+    /* Анімації */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes zoomIn {
+      from {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+      }
+      to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Реєстрація</h1>
+  <form id="registrationForm">
+    <label for="name">Ім'я:</label>
+    <input type="text" id="name" placeholder="Введіть ім'я" required>
+
+    <label for="type">Тип:</label>
+    <select id="type">
+      <option value="person">Людина</option>
+      <option value="company">Компанія</option>
+    </select>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" placeholder="Введіть email" required>
+
+    <label for="reason">Причина блокування (якщо є):</label>
+    <textarea id="reason" placeholder="Опишіть причину блокування"></textarea>
+
+    <button type="submit">Зареєструвати</button>
+  </form>
+
+  <div class="user-list">
+    <h2>На розгляді</h2>
+    <div id="pendingUsers"></div>
+  </div>
+
+  <div class="approved-list">
+    <h2>Схвалені</h2>
+    <div id="approvedUsers"></div>
+  </div>
+
+  <!-- Модальне вікно -->
+  <div class="modal" id="modal">
+    <p>Увага! Заявка на розгляді.</p>
+    <p id="reasonText">Причина блокування: Немає причини.</p>
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <p id="timerText">До автоматичного схвалення: <span id="timer">5</span> секунд.</p>
+    <button class="admin-btn" id="approveBtn">Схвалити</button>
+    <button class="admin-btn" id="cancelBtn" style="background-color: #dc3545;">Закрити</button>
+  </div>
+  <div class="overlay" id="overlay"></div>
+
+  <script>
+    const form = document.getElementById('registrationForm');
+    const pendingUsersDiv = document.getElementById('pendingUsers');
+    const approvedUsersDiv = document.getElementById('approvedUsers');
+    const modal = document.getElementById('modal');
+    const overlay = document.getElementById('overlay');
+    const approveBtn = document.getElementById('approveBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const reasonText = document.getElementById('reasonText');
+    const timerSpan = document.getElementById('timer');
+    const progressBar = document.getElementById('progressBar');
+
+    let pendingUsers = JSON.parse(localStorage.getItem('pendingUsers')) || [];
+    let approvedUsers = JSON.parse(localStorage.getItem('approvedUsers')) || [];
+    let currentPendingUser = null;
+    let timerInterval;
+
+    function renderUsers() {
+      pendingUsersDiv.innerHTML = '';
+      approvedUsersDiv.innerHTML = '';
+
+      if (pendingUsers.length === 0) {
+        pendingUsersDiv.innerHTML = '<p>Немає заявок.</p>';
+      } else {
+        pendingUsers.forEach((user, index) => {
+          const userItem = document.createElement('div');
+          userItem.classList.add('user-item');
+          userItem.textContent = `${user.name} (${user.type === 'person' ? 'Людина' : 'Компанія'})`;
+          userItem.addEventListener('click', () => openModal(user, index));
+          pendingUsersDiv.appendChild(userItem);
+        });
+      }
+
+      if (approvedUsers.length === 0) {
+        approvedUsersDiv.innerHTML = '<p>Немає схвалених користувачів.</p>';
+      } else {
+        approvedUsers.forEach((user) => {
+          const approvedItem = document.createElement('div');
+          approvedItem.classList.add('approved-item');
+          approvedItem.textContent = `${user.name} (${user.type === 'person' ? 'Людина' : 'Компанія'})`;
+          approvedUsersDiv.appendChild(approvedItem);
+        });
+      }
+    }
+
+    function openModal(user, index) {
+      currentPendingUser = { user, index };
+      reasonText.textContent = `Причина блокування: ${user.reason || 'Немає причини'}`;
+      modal.style.display = 'block';
+      overlay.style.display = 'block';
+
+      let timeLeft = 345;
+      progressBar.style.width = '0';
+      timerSpan.textContent = timeLeft;
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        progressBar.style.width = `${(345 - timeLeft) * 20}%`;
+        timerSpan.textContent = timeLeft;
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          approveUser();
+        }
+      }, 1000);
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+      overlay.style.display = 'none';
+      clearInterval(timerInterval);
+    }
+
+    function approveUser() {
+      approvedUsers.push(currentPendingUser.user);
+      pendingUsers.splice(currentPendingUser.index, 1);
+
+      localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
+      localStorage.setItem('approvedUsers', JSON.stringify(approvedUsers));
+
+      renderUsers();
+      closeModal();
+    }
+
+    approveBtn.addEventListener('click', approveUser);
+    cancelBtn.addEventListener('click', closeModal);
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const type = document.getElementById('type').value;
+      const email = document.getElementById('email').value.trim();
+      const reason = document.getElementById('reason').value.trim();
+
+      pendingUsers.push({ name, type, email, reason });
+      localStorage.setItem('pendingUsers', JSON.stringify(pendingUsers));
+
+      form.reset();
+      renderUsers();
+    });
+
+    renderUsers();
+  </script>
+</body>
+</html>
